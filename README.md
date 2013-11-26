@@ -12,6 +12,8 @@ Includes
 - Attaching additional input `EventStream` to any `Model` by using
   `model.addSource`
 
+[![Build Status](https://api.travis-ci.org/wolfflow/bacon.model.png)](https://travis-ci.org/wolfflow/bacon.model)
+
 ## Model API
 
 ###Bacon.Model(initValue)
@@ -151,4 +153,4 @@ Use the `npm test` to run all tests.
 
 Tests include mocha tests under the `test` directory
 
-TODO: bower links and travis status
+TODO: bower links
