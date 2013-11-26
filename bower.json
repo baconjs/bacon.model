@@ -1,0 +1,6 @@
+{
+  "name": "bacon.model",
+  "version": "0.1.0",
+  "main": "dist/bacon.model.js",
+  "ignore": ["browsertest", "examples", "src", "test", "./*.*", "build", "release", "run-tests", "version"]
+}

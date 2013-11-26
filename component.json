@@ -1,0 +1,5 @@
+{
+  "name": "bacon.model",
+  "version": "0.3.14",
+  "main": "./dist/bacon.model.js"
+}

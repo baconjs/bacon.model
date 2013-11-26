@@ -1,0 +1,7 @@
+#!/bin/bash -e
+
+npm install
+
+export grep=$1
+
+./node_modules/mocha/bin/mocha --compilers coffee:coffee-script test/**
