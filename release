@@ -17,7 +17,7 @@ npm test
 ./build
 
 echo "Updating files"
-sed -i "" 's/\("version".*:.*\)".*"/\1"'$version'"/' component.json package.json bower.json
+sed -i "" s/\("version".*:.*\)".*"/\1"'$version'"/ component.json package.json bower.json
 
 echo "Commit and tag"
 git add .
