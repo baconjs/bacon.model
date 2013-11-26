@@ -105,7 +105,7 @@ strings like this:
 
 ## Binding API
 
-BJQ uses a simple `Binding` API for creating `Model` objects bound to
+Bacon.model uses a simple `Binding` API for creating `Model` objects bound to
 DOM elements. 
 
 ###Bacon.Binding(options)
@@ -141,7 +141,7 @@ TODO: more
 
 ## Use with Node / Browserify
 
-BJQ is registered in the NPM repository as `bacon.model` and works fine with [node-browserify](https://github.com/substack/node-browserify).
+Bacon.model is registered in the NPM repository as `bacon.model` and works fine with [node-browserify](https://github.com/substack/node-browserify).
 
 ## Use with Bower
 
