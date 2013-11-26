@@ -139,6 +139,36 @@ Creates a lens with a `{get, set}` pair such as `{ get: function(context) { .. 
 
 TODO: more
 
+## Use with Node / Browserify
+
+BJQ is registered in the NPM repository as `bacon.model` and works fine with [node-browserify](https://github.com/substack/node-browserify).
+
+## Use with Bower
+
+Registered to the Bower registry as `bacon.model`.
+
+## Use with AMD / RequireJS
+
+An example:
+
+```js
+require.config({
+  paths: {
+    "bacon": "components/bacon/dist/Bacon",
+    "bacon.model": "../dist/bacon.model"
+  }})
+require(["bacon", "bacon.model"], function(Bacon) {
+  var model = Bacon.Model({foo:"bar"})
+  model.onValue(console, "log")
+  model.set({foo: "barbaz"})
+})
+```
+## Use without AMD
+
+Feel free to use plain old `<script>` tags to include `Bacon` and `bacon.model`
+
+The prebuilt javascript file can be found in the `dist` directory, or [here](https://raw.github.com/baconjs/bacon.model/master/dist/bacon.model.js).
+
 ## Building
 
 The `bacon.model` module is built using NPM and Grunt.
@@ -152,5 +182,3 @@ Built javascript files are under the `dist` directory.
 Use the `npm test` to run all tests.
 
 Tests include mocha tests under the `test` directory
-
-TODO: bower links
