@@ -137,7 +137,7 @@ init = (Bacon) ->
       copy[key] = value
     copy
 
-  Bacon.Model
+  Bacon
 
 if module?
   Bacon = require("baconjs")
