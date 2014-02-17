@@ -105,8 +105,9 @@ strings like this:
 
 ## Binding API
 
-Bacon.model uses a simple `Binding` API for creating `Model` objects bound to
-DOM elements. 
+Bacon.model provides a simple `Binding` API for creating `Model` objects bound to,
+for instance, DOM elements. This is the API that [bacon.jquery](https://github.com/baconjs/bacon.jquery)
+uses to create two-way bound models.
 
 ###Bacon.Binding(options)
 
@@ -121,6 +122,19 @@ these events are ignored; they are only used to trigger the polling of
 the new value from the UI using the `get` function.
 
 `initValue (optional)` : initial value to be set for the model
+
+For example, the implementation of the [`checkBoxValue`](https://github.com/baconjs/bacon.jquery#baconcheckboxvaluefield--initvalue) 
+method in `bacon.jquery` looks like this:
+
+```coffeescript
+  Bacon.$.checkBoxValue = (element, initValue) ->
+    Bacon.Binding {
+      initValue,
+      get: -> element.is(":checked"),
+      events: element.asEventStream("change"),
+      set: (value) -> element.attr "checked", value
+    }
+```
 
 ## Lenses 
 
