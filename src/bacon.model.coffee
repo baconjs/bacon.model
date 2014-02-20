@@ -31,7 +31,7 @@ init = (Bacon) ->
     ).skipDuplicates(sameValue(eq)).changes().toProperty()
     model = valueWithSource.map(".value").skipDuplicates(eq)
     model.onValue((x) -> currentValue = x)
-    model.id = myId
+    model.id = myId if not model.id
     model.addSyncSource = (syncEvents) ->
       syncBus.plug syncEvents
         .filter((e) -> 
