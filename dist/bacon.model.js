@@ -120,10 +120,6 @@
         this.addSyncSource(other.syncEvents());
         return other.addSyncSource(this.syncEvents());
       };
-      model.onValue();
-      if (arguments.length >= 1) {
-        model.set(initValue);
-      }
       model.lens = function(lens) {
         var lensed;
         lens = Lens(lens);
@@ -137,6 +133,12 @@
         return lensed;
       };
       model.syncConverter = id;
+      model.onValue();
+      if (arguments.length >= 1) {
+        model.apply(Bacon.once(function() {
+          return initValue;
+        }));
+      }
       return model;
     };
     Bacon.Model.syncCount = 0;
