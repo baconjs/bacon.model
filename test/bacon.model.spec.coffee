@@ -30,6 +30,11 @@ describe "Model.set", ->
     b.set("wat")
     b.set("wat")
     expect(values).to.deep.equal(["wat"])
+  it "works when setting value in during bacon dispatch", ->
+    b = lib.Model("init")
+    Bacon.once(1).onValue ->
+      b.set("value1")
+    expect(b.get()).to.equal("value1")
 
 describe "Model.get", ->
   it "returns current value", ->
@@ -208,6 +213,19 @@ describe "Model.lens", ->
       {}, 
       {first: "f"},
       {first: "f", last: "l"}])
+  it "works when pushing within bacon dispatch", ->
+    model = lib.Model {field1: "init"}
+    valueLens = model.lens("field1")
+    lib.once(1).onValue ->
+      valueLens.set("value1")
+    expect(valueLens.get()).to.equal("value1")
+  it "works when creating lens and pushing within bacon dispatch", ->
+    model = lib.Model {field1: "init"}
+    model.lens("field1")
+    lib.once(1).onValue ->
+      valueLens = model.lens("field1")
+      valueLens.set("value1")
+    expect(model.lens("field1").get()).to.equal("value1")
 
 describe "Model.combine", ->
   it "creates a new model using a template", ->
