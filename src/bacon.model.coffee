@@ -58,8 +58,6 @@ init = (Bacon) ->
     model.bind = (other) ->
       this.addSyncSource(other.syncEvents())
       other.addSyncSource(this.syncEvents())
-    model.onValue()
-    model.set(initValue) if (arguments.length >= 1)
     model.lens = (lens) ->
       lens = Lens(lens)
       lensed = Model()
@@ -70,8 +68,11 @@ init = (Bacon) ->
         valueLens.set(e, lens.get(e.value))))
       lensed
     model.syncConverter = id
+    model.onValue()
+    if (arguments.length >= 1)
+      model.apply(Bacon.once(-> initValue))
     model
-  
+
   Bacon.Model.syncCount = 0
 
   Model.combine = (template) ->
