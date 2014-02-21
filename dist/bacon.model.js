@@ -4,6 +4,11 @@
 
   init = function(Bacon) {
     var Lens, Model, defaultEquals, fold, globalModCount, id, idCounter, isModel, nonEmpty, sameValue, shallowCopy, valueLens;
+    if (!Bacon.afterTransaction) {
+      Bacon.afterTransaction = function(f) {
+        return f();
+      };
+    }
     id = function(x) {
       return x;
     };
@@ -61,7 +66,9 @@
       model.onValue(function(x) {
         return currentValue = x;
       });
-      model.id = myId;
+      if (!model.id) {
+        model.id = myId;
+      }
       model.addSyncSource = function(syncEvents) {
         return syncBus.plug(syncEvents.filter(function(e) {
           return e.changed && !Bacon._.contains(e.modStack, myId);
@@ -94,7 +101,9 @@
         }));
       };
       model.modify = function(f) {
-        return model.apply(Bacon.once(f));
+        return Bacon.afterTransaction(function() {
+          return model.apply(Bacon.once(f));
+        });
       };
       model.set = function(value) {
         return model.modify(function() {
