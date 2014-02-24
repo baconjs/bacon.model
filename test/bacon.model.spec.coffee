@@ -218,6 +218,7 @@ describe "Model.lens", ->
     valueLens = model.lens("field1")
     lib.once(1).onValue ->
       valueLens.set("value1")
+      expect(valueLens.get()).to.equal("value1")
     expect(valueLens.get()).to.equal("value1")
   it "works when creating lens and pushing within bacon dispatch", ->
     model = lib.Model {field1: "init"}
@@ -225,6 +226,7 @@ describe "Model.lens", ->
     lib.once(1).onValue ->
       valueLens = model.lens("field1")
       valueLens.set("value1")
+      expect(valueLens.get()).to.equal("value1")
     expect(model.lens("field1").get()).to.equal("value1")
 
 describe "Model.combine", ->

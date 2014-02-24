@@ -1,7 +1,4 @@
 init = (Bacon) ->
-  if !Bacon.afterTransaction
-    # Patch for Bacon.js < 0.7.4
-    Bacon.afterTransaction = (f) -> f()
   id = (x) -> x
   nonEmpty = (x) -> x.length > 0
   fold = (xs, seed, f) ->
@@ -33,7 +30,9 @@ init = (Bacon) ->
       [syncBus], ((_, syncEvent) -> syncEvent)
     ).skipDuplicates(sameValue(eq)).changes().toProperty()
     model = valueWithSource.map(".value").skipDuplicates(eq)
-    model.onValue((x) -> currentValue = x)
+    model.subscribeInternal (event) -> 
+      if event.hasValue()
+        currentValue = event.value()
     model.id = myId if not model.id # Patch for Bacon.js < 0.7
     model.addSyncSource = (syncEvents) ->
       syncBus.plug syncEvents
@@ -50,8 +49,7 @@ init = (Bacon) ->
         .map((change) -> change.value)
     model.addSource = (source) -> model.apply(source.map((v) -> (->v)))
     model.modify = (f) -> 
-      Bacon.afterTransaction ->
-        model.apply(Bacon.once(f))
+      model.apply(Bacon.once(f))
     model.set = (value) -> model.modify(-> value)
     model.get = -> currentValue
     model.syncEvents = -> valueWithSource.toEventStream()
@@ -68,9 +66,8 @@ init = (Bacon) ->
         valueLens.set(e, lens.get(e.value))))
       lensed
     model.syncConverter = id
-    model.onValue()
     if (arguments.length >= 1)
-      model.apply(Bacon.once(-> initValue))
+      model.set initValue
     model
 
   Bacon.Model.syncCount = 0
