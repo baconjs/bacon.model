@@ -73,32 +73,26 @@ describe "Model.apply", ->
     expect(values).to.deep.equal([1, 2, 4, 8])
   it "Applies given async stream of functions to the Model", (done) ->
     b = lib.Model(1)
-    b.onValue((val) ->
-      if (val == 2) then done()
-    )
-    b.apply(Bacon.fromBinder((sink) ->
+    b.onValue (val) ->
+      if val == 2 then done()
+    b.apply Bacon.fromBinder (sink) ->
       setTimeout((->
         sink(twice)
       ), 500)
       ->
-    ))
   it "Applies given node-stream stream of functions to the Model", (done) ->
     b = lib.Model(1)
-    b.onValue((val) ->
-      if (val == 3) then done()
-    )
-    b.apply(Bacon.fromBinder((sink) ->
+    b.onValue (val) ->
+      if val == 3 then done()
+    b.apply Bacon.fromBinder (sink) ->
       S = require('stream').Transform
       s = new S(objectMode: true)
-      s.on('readable', ->
-        mult = parseInt(s.read())
-        f = (x) -> x * mult
-        sink(f)
-      )
+      s.on 'readable', ->
+        mult = parseInt s.read()
+        sink((x) -> x * mult)
       s.push(3)
       s.push(null)
       ->
-    ))
 
 describe "Model.addSource", ->
   it "connects new input stream", ->
