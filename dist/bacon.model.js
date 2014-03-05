@@ -193,7 +193,7 @@
           }
         });
       };
-      keys = path.split(".").filter(nonEmpty);
+      keys = Bacon._.filter(nonEmpty, path.split("."));
       return Lens.compose.apply(Lens, keys.map(objectKeyLens));
     };
     Lens.compose = function() {
