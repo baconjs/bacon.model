@@ -194,7 +194,7 @@
         });
       };
       keys = Bacon._.filter(nonEmpty, path.split("."));
-      return Lens.compose.apply(Lens, keys.map(objectKeyLens));
+      return Lens.compose.apply(Lens, Bacon._.map(objectKeyLens, keys));
     };
     Lens.compose = function() {
       var args, compose2;

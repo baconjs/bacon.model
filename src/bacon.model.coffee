@@ -115,7 +115,7 @@ init = (Bacon) ->
         set: (context, value) -> shallowCopy context, key, value
       }
     keys = Bacon._.filter(nonEmpty, path.split("."))
-    Lens.compose(keys.map(objectKeyLens)...)
+    Lens.compose(Bacon._.map(objectKeyLens, keys)...)
 
   Lens.compose = (args...) -> 
     compose2 = (outer, inner) -> Lens {
