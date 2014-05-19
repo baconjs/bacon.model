@@ -35,13 +35,14 @@ init = (Bacon) ->
         currentValue = event.value()
     model.id = myId if not model.id # Patch for Bacon.js < 0.7
     model.addSyncSource = (syncEvents) ->
-      syncBus.plug syncEvents
+      syncBus.plug(syncEvents
         .filter((e) -> 
           e.changed && !Bacon._.contains(e.modStack, myId)
         )
         .doAction(-> Bacon.Model.syncCount++)
         .map((e) -> shallowCopy e, "modStack", e.modStack.concat([myId]))
         .map((e) -> valueLens.set(e, model.syncConverter(valueLens.get(e))))
+      )
     model.apply = (source) -> 
       modificationBus.plug(source.toEventStream().map((f) -> {source, f}))
       valueWithSource.changes()
