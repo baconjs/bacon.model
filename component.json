@@ -4,5 +4,6 @@
   "dependencies":{
     "baconjs/bacon.js":"*"
   },
-  "main": "dist/bacon.model.js"
+  "main": "dist/bacon.model.js",
+  "scripts":["dist/bacon.model.js"]
 }
