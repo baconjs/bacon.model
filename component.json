@@ -1,5 +1,8 @@
 {
   "name": "bacon.model",
   "version": "0.1.8",
-  "main": "./dist/bacon.model.js"
+  "dependencies":{
+    "baconjs/bacon.js":"*
+  },
+  "main": "dist/bacon.model.js"
 }
