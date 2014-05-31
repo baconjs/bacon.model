@@ -231,7 +231,7 @@
   };
 
   if (typeof module !== "undefined" && module !== null) {
-    Bacon = require("baconjs");
+    Bacon = require("bacon");
     module.exports = init(Bacon);
   } else {
     if (typeof define === "function" && define.amd) {
