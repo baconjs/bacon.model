@@ -231,7 +231,11 @@
   };
 
   if (typeof module !== "undefined" && module !== null) {
-    Bacon = require("baconjs");
+    try {
+      Bacon = require("baconjs");
+    } catch (e) {
+      Bacon = require("bacon");
+    }
     module.exports = init(Bacon);
   } else {
     if (typeof define === "function" && define.amd) {
