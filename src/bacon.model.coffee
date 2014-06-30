@@ -112,7 +112,7 @@ init = (Bacon) ->
   Lens.objectLens = (path) ->
     objectKeyLens = (key) -> 
       Lens {
-        get: (x) -> x[key],
+        get: (x) -> x?[key]
         set: (context, value) -> shallowCopy context, key, value
       }
     keys = Bacon._.filter(nonEmpty, path.split("."))
