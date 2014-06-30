@@ -250,6 +250,12 @@ describe "Model.lens", ->
       valueLens.set("value1")
       expect(valueLens.get()).to.equal("value1")
     expect(model.lens("field1").get()).to.equal("value1")
+  it "gets undefined when model structure has been destroyed", ->
+    model = lib.Model {users: [{name: "Dan"}]}
+    nameLens = model.lens('users.0.name')
+    expect(nameLens.get()).to.equal("Dan")
+    model.set({users: []})
+    expect(nameLens.get()).to.equal(undefined)
 
 describe "Model.combine", ->
   it "creates a new model using a template", ->
