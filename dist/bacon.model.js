@@ -186,7 +186,7 @@
       objectKeyLens = function(key) {
         return Lens({
           get: function(x) {
-            return x[key];
+            return x != null ? x[key] : void 0;
           },
           set: function(context, value) {
             return shallowCopy(context, key, value);
