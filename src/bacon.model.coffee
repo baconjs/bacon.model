@@ -30,7 +30,7 @@ init = (Bacon) ->
       [syncBus], ((_, syncEvent) -> syncEvent)
     ).skipDuplicates(sameValue(eq)).changes().toProperty()
     model = valueWithSource.map(".value").skipDuplicates(eq)
-    model.subscribeInternal (event) -> 
+    model.dispatcher.subscribe (event) ->
       if event.hasValue()
         currentValue = event.value()
     model.id = myId if not model.id # Patch for Bacon.js < 0.7
