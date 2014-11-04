@@ -58,7 +58,7 @@
         return syncEvent;
       })).skipDuplicates(sameValue(eq)).changes().toProperty();
       model = valueWithSource.map(".value").skipDuplicates(eq);
-      model.subscribeInternal(function(event) {
+      model.dispatcher.subscribe(function(event) {
         if (event.hasValue()) {
           return currentValue = event.value();
         }
