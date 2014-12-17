@@ -16,9 +16,16 @@ Includes
 
 ## Model API
 
-###Bacon.Model(initValue)
+###Bacon.Model(initValue [, options])
 
-Creates a new model, with the given (optional) initial value.
+Creates a new model, with the given (optional) initial value. The optional `options` argument is an object that
+currently accepts the following field:
+
+`isEqual` (optional) : a two-arg function that should return true iff its two arguments are to be considered
+equal values, and return false otherwise. This is used for implicitly
+[skipping duplicates](https://github.com/baconjs/bacon.js/#property-skipduplicates).
+This defaults to `===` comparison.
+
 
 ###model.set(value)
 
