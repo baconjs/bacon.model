@@ -50,7 +50,7 @@ describe "Model initial value", ->
   it "is sent", ->
     cylinders = lib.Model(12)
     expect(collect(cylinders)).to.deep.equal([12])
-  it "handles undefined like any other value", ->
+  it "handles undefined like any other value if no second argument is given", ->
     cylinders = lib.Model(undefined)
     expect(collect(cylinders)).to.deep.equal([undefined])
   it "can be omitted", ->
@@ -319,6 +319,22 @@ describe "Model.combine", ->
     expect(values).to.deep.equal([
       { a: "a", b: "b" },
       { a: "a2", b: "b" }])
+
+
+customEquals = (a, b) -> a.x == b.x && a.y == b.y
+
+describe "Model with custom isEqual function", ->
+  it "ignores object duplicates from input by custom equality", ->
+    b = lib.Model(undefined, { isEqual: customEquals })
+    values = collect(b)
+    b.addSource(Bacon.fromArray([{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 1, y: 0 }]))
+    expect(values).to.deep.equal([{ x: 0, y: 0 }, { x: 1, y: 0 }])
+  it "ignores object duplicates from input with init value by custom equality", ->
+    b = lib.Model({ x: 0, y: 0 }, { isEqual: customEquals })
+    values = collect(b)
+    b.addSource(Bacon.fromArray([{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 1, y: 0 }]))
+    expect(values).to.deep.equal([{ x: 0, y: 0 }, { x: 1, y: 0 }])
+
 
 collect = (observable) ->
   values = []

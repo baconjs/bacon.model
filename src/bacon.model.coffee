@@ -13,9 +13,9 @@ init = (Bacon) ->
   defaultEquals = (a, b) -> a == b
   sameValue = (eq) -> (a, b) -> !a.initial && eq(a.value, b.value)
   
-  Model = Bacon.Model = (initValue) ->
+  Model = Bacon.Model = (initValue, options = {}) ->
     myId = idCounter++
-    eq = defaultEquals
+    eq = options.isEqual || defaultEquals
     myModCount = 0
     modificationBus = new Bacon.Bus()
     syncBus = new Bacon.Bus()
@@ -67,7 +67,7 @@ init = (Bacon) ->
         valueLens.set(e, lens.get(e.value))))
       lensed
     model.syncConverter = id
-    if (arguments.length >= 1)
+    if (arguments.length == 1 || arguments.length > 1 && typeof arguments[0] != 'undefined')
       model.set initValue
     model
 

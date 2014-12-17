@@ -31,10 +31,13 @@
         return !a.initial && eq(a.value, b.value);
       };
     };
-    Model = Bacon.Model = function(initValue) {
+    Model = Bacon.Model = function(initValue, options) {
       var currentValue, eq, model, modificationBus, myId, myModCount, syncBus, valueWithSource;
+      if (options == null) {
+        options = {};
+      }
       myId = idCounter++;
-      eq = defaultEquals;
+      eq = options.isEqual || defaultEquals;
       myModCount = 0;
       modificationBus = new Bacon.Bus();
       syncBus = new Bacon.Bus();
@@ -128,7 +131,7 @@
         return lensed;
       };
       model.syncConverter = id;
-      if (arguments.length >= 1) {
+      if (arguments.length === 1 || arguments.length > 1 && typeof arguments[0] !== 'undefined') {
         model.set(initValue);
       }
       return model;
