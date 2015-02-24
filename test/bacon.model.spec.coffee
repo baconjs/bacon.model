@@ -178,7 +178,7 @@ describe "Model.bind", ->
 
 describe "Model.lens", ->
   engineLens = {
-    get: (car) -> 
+    get: (car) ->
       car.engine
     set: (car, engine) ->
       car.engine = engine

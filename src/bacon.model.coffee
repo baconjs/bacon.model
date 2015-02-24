@@ -1,80 +1,116 @@
-init = (Bacon) ->
-  id = (x) -> x
-  nonEmpty = (x) -> x.length > 0
-  fold = (xs, seed, f) ->
-    for x in xs
-      seed = f(seed, x)
-    seed
-  isModel = (obj) -> obj instanceof Bacon.Property
+id = (x) -> x
 
-  globalModCount = 0
+nonEmpty = (x) -> x.length > 0
+
+isModel = (obj) -> obj instanceof Bacon.Property
+isArray = (obj) -> obj instanceof Array
+isObject = (obj) -> typeof obj == "object"
+isEqual = (a, b) -> a == b
+
+fold = (xs, seed, f) ->
+  for x in xs
+    seed = f(seed, x)
+  seed
+
+shallowCopy = (x, key, value) ->
+  copy = if isArray(x)
+    []
+  else
+    {}
+
+  copy[k] = v for k, v of x
+
+  if key?
+    copy[key] = value
+
+  copy
+
+init = (Bacon) ->
+  _ = Bacon._
   idCounter = 1
 
-  defaultEquals = (a, b) -> a == b
-  sameValue = (eq) -> (a, b) -> !a.initial && eq(a.value, b.value)
-  
   Model = Bacon.Model = (initValue) ->
     myId = idCounter++
-    eq = defaultEquals
-    myModCount = 0
+    currentValue = undefined
+
     modificationBus = new Bacon.Bus()
     syncBus = new Bacon.Bus()
-    currentValue = undefined
+
     valueWithSource = Bacon.update(
       { initial: true },
-      [modificationBus], (({value}, {source, f}) -> 
+
+      [modificationBus], (({value}, {source, f}) ->
         newValue = f(value)
         modStack = [myId]
         changed = newValue != value
         {source, value: newValue, modStack, changed}),
-      [syncBus], ((_, syncEvent) -> syncEvent)
-    ).skipDuplicates(sameValue(eq)).changes().toProperty()
-    model = valueWithSource.map(".value").skipDuplicates(eq)
+
+      [syncBus], ((__, syncEvent) -> syncEvent)
+    )
+      .filter("!.initial")
+      .skipDuplicates(isEqual)
+      .changes()
+      .toProperty()
+
+    model = valueWithSource
+      .map(".value")
+      .skipDuplicates(isEqual)
+
     model.dispatcher.subscribe (event) ->
       if event.hasValue()
         currentValue = event.value()
-    model.id = myId if not model.id # Patch for Bacon.js < 0.7
+
+    model.id ||= myId
+
     model.addSyncSource = (syncEvents) ->
-      syncBus.plug(syncEvents
-        .filter((e) -> 
-          e.changed && !Bacon._.contains(e.modStack, myId)
-        )
-        .doAction(-> Bacon.Model.syncCount++)
-        .map((e) -> shallowCopy e, "modStack", e.modStack.concat([myId]))
+      source = syncEvents
+        .filter((e) -> e.changed && !_.contains(e.modStack, myId))
+        .map((e) -> shallowCopy(e, "modStack", e.modStack.concat([myId])))
         .map((e) -> valueLens.set(e, model.syncConverter(valueLens.get(e))))
-      )
-    model.apply = (source) -> 
+
+      syncBus.plug(source)
+
+    model.apply = (source) ->
       modificationBus.plug(source.toEventStream().map((f) -> {source, f}))
       valueWithSource.changes()
         .filter((change) -> change.source != source)
         .map((change) -> change.value)
+
     model.addSource = (source) -> model.apply(source.map((v) -> (->v)))
-    model.modify = (f) -> 
-      model.apply(Bacon.once(f))
+
+    model.modify = (f) -> model.apply(Bacon.once(f))
+
     model.set = (value) -> model.modify(-> value)
+
     model.get = -> currentValue
+
     model.syncEvents = -> valueWithSource.toEventStream()
+
     model.bind = (other) ->
-      this.addSyncSource(other.syncEvents())
-      other.addSyncSource(this.syncEvents())
+      @addSyncSource(other.syncEvents())
+      other.addSyncSource(@syncEvents())
+
     model.lens = (lens) ->
       lens = Lens(lens)
       lensed = Model()
-      this.addSyncSource(model.sampledBy(lensed.syncEvents(), (full, lensedSync) ->
+
+      @addSyncSource(model.sampledBy(lensed.syncEvents(), (full, lensedSync) ->
         valueLens.set(lensedSync, lens.set(full, lensedSync.value))
       ))
-      lensed.addSyncSource(this.syncEvents().map((e) -> 
+
+      lensed.addSyncSource(@syncEvents().map((e) ->
         valueLens.set(e, lens.get(e.value))))
       lensed
+
     model.syncConverter = id
+
     if (arguments.length >= 1)
-      model.set initValue
+      model.set(initValue)
+
     model
 
-  Bacon.Model.syncCount = 0
-
   Model.combine = (template) ->
-    if typeof template != "object"
+    if !isObject(template)
       Model(template)
     else if isModel(template)
       template
@@ -87,63 +123,60 @@ init = (Bacon) ->
         lensedModel.bind(Model.combine(value))
       model
 
-  Bacon.Binding = ({ initValue, get, events, set}) ->
+  Bacon.Binding = ({ initValue, get, events, set }) ->
     inputs = events.map(get)
+
     if initValue?
       set(initValue)
     else
       initValue = get()
-    model = Bacon.Model(initValue)
-    externalChanges = model.addSource(inputs)
-    externalChanges.assign(set)
+
+    model = Model(initValue)
+
+    model
+      .addSource(inputs)
+      .assign(set)
+
     model
 
   Lens = Bacon.Lens = (lens) ->
-    if typeof lens == "object"
+    if isObject(lens)
       lens
     else
       Lens.objectLens(lens)
 
-  Lens.id = Lens {
+  Lens.id = Lens({
     get: (x) -> x
-    set: (context, value) -> value
-  }
+    set: (__, value) -> value
+  })
 
   Lens.objectLens = (path) ->
-    objectKeyLens = (key) -> 
-      Lens {
+    objectKeyLens = (key) ->
+      Lens({
         get: (x) -> x?[key]
-        set: (context, value) -> shallowCopy context, key, value
-      }
-    keys = Bacon._.filter(nonEmpty, path.split("."))
-    Lens.compose(Bacon._.map(objectKeyLens, keys)...)
+        set: (context, value) -> shallowCopy(context, key, value)
+      })
 
-  Lens.compose = (args...) -> 
-    compose2 = (outer, inner) -> Lens {
-      get: (x) -> inner.get(outer.get(x)),
-      set: (context, value) ->
-        innerContext = outer.get(context)
-        newInnerContext = inner.set(innerContext, value)
-        outer.set(context, newInnerContext)
-    }
+    keys = _.filter(nonEmpty, path.split("."))
+    Lens.compose(_.map(objectKeyLens, keys)...)
+
+  Lens.compose = (args...) ->
+    compose2 = (outer, inner) ->
+      Lens({
+        get: (x) -> inner.get(outer.get(x))
+        set: (context, value) ->
+          innerContext = outer.get(context)
+          newInnerContext = inner.set(innerContext, value)
+          outer.set(context, newInnerContext)
+      })
+
     fold(args, Lens.id, compose2)
-  
-  valueLens = Lens.objectLens("value")
 
-  shallowCopy = (x, key, value) ->
-    copy = if x instanceof Array
-      []
-    else
-      {}
-    for k, v of x
-      copy[k] = v
-    if key?
-      copy[key] = value
-    copy
+  valueLens = Lens.objectLens("value")
 
   Bacon
 
-if module?
+if module? && module.exports?
   Bacon = require("baconjs")
   module.exports = init(Bacon)
 else
