@@ -4,4 +4,4 @@ npm install
 
 export grep=$1
 
-./node_modules/mocha/bin/mocha --compilers coffee:coffee-script test/**
+./node_modules/mocha/bin/mocha --compilers coffee:coffee-script/register test/**
