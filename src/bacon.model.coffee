@@ -139,6 +139,16 @@ init = (Bacon) ->
 
     model
 
+  Bacon.localStorageProperty = (key) ->
+    get = -> localStorage.getItem(key)
+
+    Bacon.Binding {
+      initValue: get(),
+      get,
+      events: Bacon.never(),
+      set: (value) -> localStorage.setItem(key, value)
+    }
+
   Lens = Bacon.Lens = (lens) ->
     if isObject(lens)
       lens

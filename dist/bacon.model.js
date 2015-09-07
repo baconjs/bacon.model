@@ -1,50 +1,69 @@
 (function() {
-  var Bacon, init,
-    __slice = [].slice;
+  var Bacon, fold, id, init, isArray, isEqual, isModel, isObject, nonEmpty, shallowCopy,
+    slice = [].slice;
+
+  id = function(x) {
+    return x;
+  };
+
+  nonEmpty = function(x) {
+    return x.length > 0;
+  };
+
+  isModel = function(obj) {
+    return obj instanceof Bacon.Property;
+  };
+
+  isArray = function(obj) {
+    return obj instanceof Array;
+  };
+
+  isObject = function(obj) {
+    return typeof obj === "object";
+  };
+
+  isEqual = function(a, b) {
+    return a === b;
+  };
+
+  fold = function(xs, seed, f) {
+    var i, len, x;
+    for (i = 0, len = xs.length; i < len; i++) {
+      x = xs[i];
+      seed = f(seed, x);
+    }
+    return seed;
+  };
+
+  shallowCopy = function(x, key, value) {
+    var copy, k, v;
+    copy = isArray(x) ? [] : {};
+    for (k in x) {
+      v = x[k];
+      copy[k] = v;
+    }
+    if (key != null) {
+      copy[key] = value;
+    }
+    return copy;
+  };
 
   init = function(Bacon) {
-    var Lens, Model, defaultEquals, fold, globalModCount, id, idCounter, isModel, nonEmpty, sameValue, shallowCopy, valueLens;
-    id = function(x) {
-      return x;
-    };
-    nonEmpty = function(x) {
-      return x.length > 0;
-    };
-    fold = function(xs, seed, f) {
-      var x, _i, _len;
-      for (_i = 0, _len = xs.length; _i < _len; _i++) {
-        x = xs[_i];
-        seed = f(seed, x);
-      }
-      return seed;
-    };
-    isModel = function(obj) {
-      return obj instanceof Bacon.Property;
-    };
-    globalModCount = 0;
+    var Lens, Model, _, idCounter, valueLens;
+    _ = Bacon._;
     idCounter = 1;
-    defaultEquals = function(a, b) {
-      return a === b;
-    };
-    sameValue = function(eq) {
-      return function(a, b) {
-        return !a.initial && eq(a.value, b.value);
-      };
-    };
     Model = Bacon.Model = function(initValue) {
-      var currentValue, eq, model, modificationBus, myId, myModCount, syncBus, valueWithSource;
+      var currentValue, model, modificationBus, myId, syncBus, valueWithSource;
       myId = idCounter++;
-      eq = defaultEquals;
-      myModCount = 0;
+      currentValue = void 0;
       modificationBus = new Bacon.Bus();
       syncBus = new Bacon.Bus();
-      currentValue = void 0;
       valueWithSource = Bacon.update({
         initial: true
-      }, [modificationBus], (function(_arg, _arg1) {
+      }, [modificationBus], (function(arg, arg1) {
         var changed, f, modStack, newValue, source, value;
-        value = _arg.value;
-        source = _arg1.source, f = _arg1.f;
+        value = arg.value;
+        source = arg1.source, f = arg1.f;
         newValue = f(value);
         modStack = [myId];
         changed = newValue !== value;
@@ -54,28 +73,26 @@
           modStack: modStack,
           changed: changed
         };
-      }), [syncBus], (function(_, syncEvent) {
+      }), [syncBus], (function(__, syncEvent) {
         return syncEvent;
-      })).skipDuplicates(sameValue(eq)).changes().toProperty();
-      model = valueWithSource.map(".value").skipDuplicates(eq);
+      })).filter("!.initial").skipDuplicates(isEqual).changes().toProperty();
+      model = valueWithSource.map(".value").skipDuplicates(isEqual);
       model.dispatcher.subscribe(function(event) {
         if (event.hasValue()) {
           return currentValue = event.value();
         }
       });
-      if (!model.id) {
-        model.id = myId;
-      }
+      model.id || (model.id = myId);
       model.addSyncSource = function(syncEvents) {
-        return syncBus.plug(syncEvents.filter(function(e) {
-          return e.changed && !Bacon._.contains(e.modStack, myId);
-        }).doAction(function() {
-          return Bacon.Model.syncCount++;
+        var source;
+        source = syncEvents.filter(function(e) {
+          return e.changed && !_.contains(e.modStack, myId);
         }).map(function(e) {
           return shallowCopy(e, "modStack", e.modStack.concat([myId]));
         }).map(function(e) {
           return valueLens.set(e, model.syncConverter(valueLens.get(e)));
-        }));
+        });
+        return syncBus.plug(source);
       };
       model.apply = function(source) {
         modificationBus.plug(source.toEventStream().map(function(f) {
@@ -133,10 +150,9 @@
       }
       return model;
     };
-    Bacon.Model.syncCount = 0;
     Model.combine = function(template) {
       var initValue, key, lens, lensedModel, model, value;
-      if (typeof template !== "object") {
+      if (!isObject(template)) {
         return Model(template);
       } else if (isModel(template)) {
         return template;
@@ -152,22 +168,35 @@
         return model;
       }
     };
-    Bacon.Binding = function(_arg) {
-      var events, externalChanges, get, initValue, inputs, model, set;
-      initValue = _arg.initValue, get = _arg.get, events = _arg.events, set = _arg.set;
+    Bacon.Binding = function(arg) {
+      var events, get, initValue, inputs, model, set;
+      initValue = arg.initValue, get = arg.get, events = arg.events, set = arg.set;
       inputs = events.map(get);
       if (initValue != null) {
         set(initValue);
       } else {
         initValue = get();
       }
-      model = Bacon.Model(initValue);
-      externalChanges = model.addSource(inputs);
-      externalChanges.assign(set);
+      model = Model(initValue);
+      model.addSource(inputs).assign(set);
       return model;
     };
+    Bacon.localStorageProperty = function(key) {
+      var get;
+      get = function() {
+        return localStorage.getItem(key);
+      };
+      return Bacon.Binding({
+        initValue: get(),
+        get: get,
+        events: Bacon.never(),
+        set: function(value) {
+          return localStorage.setItem(key, value);
+        }
+      });
+    };
     Lens = Bacon.Lens = function(lens) {
-      if (typeof lens === "object") {
+      if (isObject(lens)) {
         return lens;
       } else {
         return Lens.objectLens(lens);
@@ -177,7 +206,7 @@
       get: function(x) {
         return x;
       },
-      set: function(context, value) {
+      set: function(__, value) {
         return value;
       }
     });
@@ -193,12 +222,12 @@
           }
         });
       };
-      keys = Bacon._.filter(nonEmpty, path.split("."));
-      return Lens.compose.apply(Lens, Bacon._.map(objectKeyLens, keys));
+      keys = _.filter(nonEmpty, path.split("."));
+      return Lens.compose.apply(Lens, _.map(objectKeyLens, keys));
     };
     Lens.compose = function() {
       var args, compose2;
-      args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+      args = 1 <= arguments.length ? slice.call(arguments, 0) : [];
       compose2 = function(outer, inner) {
         return Lens({
           get: function(x) {
@@ -215,22 +244,10 @@
       return fold(args, Lens.id, compose2);
     };
     valueLens = Lens.objectLens("value");
-    shallowCopy = function(x, key, value) {
-      var copy, k, v;
-      copy = x instanceof Array ? [] : {};
-      for (k in x) {
-        v = x[k];
-        copy[k] = v;
-      }
-      if (key != null) {
-        copy[key] = value;
-      }
-      return copy;
-    };
     return Bacon;
   };
 
-  if (typeof module !== "undefined" && module !== null) {
+  if ((typeof module !== "undefined" && module !== null) && (module.exports != null)) {
     Bacon = require("baconjs");
     module.exports = init(Bacon);
   } else {

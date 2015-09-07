@@ -11,6 +11,7 @@ Includes
 - Composing `Model` objects using `model.bind`, `Model.combine` and `model.lens`
 - Attaching additional input `EventStream` to any `Model` by using
   `model.addSource`
+- Creating `Model` objects bound to `localStorage` elements
 
 [![Build Status](https://api.travis-ci.org/wolfflow/bacon.model.png)](https://travis-ci.org/wolfflow/bacon.model)
 
@@ -134,6 +135,16 @@ method in `bacon.jquery` looks like this:
       events: element.asEventStream("change"),
       set: (value) -> element.attr "checked", value
     }
+```
+
+###Bacon.localStorageProperty(key)
+
+Creates a new `Model` bound to the element of `localStorage` with the given key.
+
+Example:
+
+```javascript
+  Bacon.$.textFieldValue($('#username')).bind(Bacon.localStorageProperty('username'));
 ```
 
 ## Lenses 
