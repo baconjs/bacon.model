@@ -25,7 +25,7 @@ shallowCopy = (x, key, value) ->
 
   copy
 
-init = (Bacon) ->
+factory = (Bacon) ->
   _ = Bacon._
   idCounter = 1
 
@@ -34,7 +34,7 @@ init = (Bacon) ->
     currentValue = undefined
 
     modificationBus = new Bacon.Bus()
-    syncBus = new Bacon.Bus()
+    syncBus         = new Bacon.Bus()
 
     valueWithSource = Bacon.update(
       { initial: true },
@@ -53,7 +53,7 @@ init = (Bacon) ->
       .toProperty()
 
     model = valueWithSource
-      .map(".value")
+      .map((x) -> x.value)
       .skipDuplicates(isEqual)
 
     model.dispatcher.subscribe (event) ->
@@ -174,13 +174,13 @@ init = (Bacon) ->
 
   valueLens = Lens.objectLens("value")
 
-  Bacon
+  Model
 
 if module? && module.exports?
   Bacon = require("baconjs")
-  module.exports = init(Bacon)
+  module.exports = factory(Bacon)
 else
   if typeof define == "function" and define.amd
-    define ["bacon"], init
+    define ["bacon"], factory
   else
-    init(this.Bacon)
+    factory(this.Bacon)
