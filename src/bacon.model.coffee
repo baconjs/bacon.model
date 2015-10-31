@@ -34,7 +34,7 @@ init = (Bacon) ->
     currentValue = undefined
 
     modificationBus = new Bacon.Bus()
-    syncBus = new Bacon.Bus()
+    syncBus         = new Bacon.Bus()
 
     valueWithSource = Bacon.update(
       { initial: true },
@@ -53,7 +53,7 @@ init = (Bacon) ->
       .toProperty()
 
     model = valueWithSource
-      .map(".value")
+      .map((x) -> x.value)
       .skipDuplicates(isEqual)
 
     model.dispatcher.subscribe (event) ->
