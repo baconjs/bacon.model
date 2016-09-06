@@ -1,3 +1,6 @@
+*Note: This repository is not maintained anymore. After consideration, I've come to the conclusion that two-way bindings are not the way to go. Lenses are still cool though, and you should definitely try [partial.lenses](https://github.com/calmm-js/partial.lenses) in combination with Bacon.update, for instance.*
+
+
 # bacon.model
 
 A data binding plugin for [Bacon.js](https://github.com/baconjs/bacon.js).
