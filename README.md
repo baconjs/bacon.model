@@ -19,43 +19,43 @@ Includes
 
 ## Model API
 
-###Bacon.Model(initValue)
+### Bacon.Model(initValue)
 
 Creates a new model, with the given (optional) initial value.
 
-###model.set(value)
+### model.set(value)
 
 Sets a new value for the model, also pushing this
 value to all two-way sources.
 
-###model.get()
+### model.get()
 
 Returns the current value of the model. If there's no current value,
 returns `undefined`.
 
-###model.modify(f)
+### model.modify(f)
 
 Modifies the value of the model by applying the
 given function to the current value. For instance, if the current value
 was `1` and you applied a `multiplyBy2` function, the value would be set
 to `2`.
 
-###model.addSource(stream)
+### model.addSource(stream)
 
 Adds an input source for pushing values to
 the model. The source may be an EventStream or a Property. The method
 returns an EventStream that contains all changes from *other sources*
 than this.
 
-###model.apply(stream)
+### model.apply(stream)
 
 Adds an input source of *modification functions* to the model. The source may be an EventStream or a Property, and is supposed to contain functions as values. Each of these functions are applied as modifications to the value of the model (as with using the `modify` method). The method returns an EventStream that contains all changes from *other sources* than this.
 
-###model.bind(other)
+### model.bind(other)
 
 Makes a two-way binding between the two models.
 
-###model.lens(lens)
+### model.lens(lens)
 
 Creates a new lensed model based on this one. For example:
 
@@ -70,7 +70,7 @@ are bound both ways meaning that changes in `engine` are reflected to
 
 See Lenses section below for full definition of Lenses.
 
-###Bacon.Model.combine(template)
+### Bacon.Model.combine(template)
 
 Creates a composite model using a template. For example:
 
@@ -93,7 +93,7 @@ updated accordingly. Also, if you set the value in the `car` model to,
 say `{price: "affordable", engine: { type: "electric", cylinders: 0 },
 doors: 4}`, the `cylinders` model will get a new value 0.
 
-###model.syncConverter
+### model.syncConverter
 
 The model has a `syncConverter` function that it uses to map the
 incoming data values from its synchronization sources, i.e. the sources
@@ -112,7 +112,7 @@ Bacon.model provides a simple `Binding` API for creating `Model` objects bound t
 for instance, DOM elements. This is the API that [bacon.jquery](https://github.com/baconjs/bacon.jquery)
 uses to create two-way bound models.
 
-###Bacon.Binding(options)
+### Bacon.Binding(options)
 
 Creates a new bound `Model`. The `options` argument is an object containing the following fields:
 
