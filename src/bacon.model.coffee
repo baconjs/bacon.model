@@ -117,7 +117,7 @@ factory = (Bacon) ->
     else
       initValue = if template instanceof Array then [] else {}
       model = Model(initValue)
-      for key, value of template
+      for own key, value of template
         lens = Lens.objectLens(key)
         lensedModel = model.lens(lens)
         lensedModel.bind(Model.combine(value))
